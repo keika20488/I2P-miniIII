@@ -5,8 +5,6 @@
 #include "./state.hpp"
 #include "../config.hpp"
 
-typedef std::pair<int, int> pii;
-
 static const int move_table_rook_bishop[8][7][2] = {
   {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}, {0, 7}},
   {{0, -1}, {0, -2}, {0, -3}, {0, -4}, {0, -5}, {0, -6}, {0, -7}},
@@ -36,14 +34,62 @@ static const int move_table_king[8][2] = {
  */
 
 // [TODO] design your own evaluation function
-//piece_value: initial, with pos
-const int init_v[] = {0, 2, 6, 7, 8, 20, 100};
-//space: ?? pts for each square in control
+//piece_value: initial, special pos
+const int init_v[] = {0, 2, 6, 7, 8, 20, 1000};
+//psqt
+const int piece_v[][BOARD_H][BOARD_W][2] = {
+  {},
+  //pawn
+  {{{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
+   {{ 2, 0},{ 3, 0},{ 7, 1},{ 3, 0},{ 2, 0}},
+   {{ 1, 1},{ 1, 0},{ 3, 1},{ 1, 0},{ 1, 0}},
+   {{ 0, 1},{ 0, 1},{ 1, 3},{ 0, 1},{ 0, 1}},
+   {{ 0, 1},{ 0, 3},{ 1, 7},{ 0, 3},{ 0, 1}},
+   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}}},
+  //rook
+  {{{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
+   {{ 1, 0},{ 2, 0},{ 3, 0},{ 2, 0},{ 1, 0}},
+   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
+   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
+   {{ 0, 1},{ 0, 2},{ 0, 3},{ 0, 2},{ 0, 1}},
+   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}}},
+  //knight
+  {{{-2,-2},{-1,-1},{-1,-1},{-1,-1},{-2,-2}},
+   {{-1,-1},{ 0, 0},{ 0, 0},{ 0, 0},{-1,-1}},
+   {{ 0, 0},{ 2, 2},{ 2, 2},{ 2, 2},{ 0, 0}},
+   {{ 0, 0},{ 2, 2},{ 2, 2},{ 2, 2},{ 0, 0}},
+   {{-1,-1},{ 0, 0},{ 0, 0},{ 0, 0},{-1,-1}},
+   {{-2,-2},{-1,-1},{-1,-1},{-1,-1},{-2,-2}}},
+  //bishop
+  {{{-2,-2},{ 0,-1},{ 0, 0},{ 0,-1},{-2,-2}},
+   {{-2,-2},{ 1, 0},{ 1, 0},{ 1, 0},{-2,-2}},
+   {{-1,-1},{ 2, 2},{ 2, 2},{ 2, 2},{-1,-1}},
+   {{ 0, 0},{ 2, 2},{ 2, 2},{ 2, 2},{ 0, 0}},
+   {{-1,-1},{ 0, 1},{ 0, 1},{ 0, 1},{-1,-1}},
+   {{-2,-2},{-1, 0},{ 0, 0},{-1, 0},{-2,-2}}},
+  //queen
+  {{{-2,-2},{ 0,-1},{ 0, 0},{ 0,-1},{-2,-2}},
+   {{-2,-2},{ 1, 0},{ 1, 0},{ 1, 0},{-2,-2}},
+   {{-1,-1},{ 2, 2},{ 2, 2},{ 2, 2},{-1,-1}},
+   {{ 0, 0},{ 2, 2},{ 2, 2},{ 2, 2},{ 0, 0}},
+   {{-1,-1},{ 0, 1},{ 0, 1},{ 0, 1},{-1,-1}},
+   {{-2,-2},{-1, 0},{ 0, 0},{-1, 0},{-2,-2}}},
+  //king
+  {{{ 0, 0},{ 0, 1},{ 0,-1},{ 0, 1},{ 0, 0}},
+   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
+   {{ 0, 0},{ 0, 0},{ 2, 2},{ 0, 0},{ 0, 0}},
+   {{ 0, 0},{ 0, 0},{ 2, 2},{ 0, 0},{ 0, 0}},
+   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
+   {{ 0, 0},{ 1, 0},{-1, 0},{ 1, 0},{ 0, 0}}}
+};
+
+//space: 1 pts for each square in control
 //attack: if can attack P then get P's init_pts
 
 //piece value
 int State::piece_value(int play, int piece, int i, int j) {
-  switch (piece) {
+  return piece_v[piece][i][j][play] * init_v[piece];
+  /*switch (piece) {
     case 1:
       if ((i = (play ? 1 : BOARD_H - 2)))
         return init_v[piece];
@@ -51,43 +97,44 @@ int State::piece_value(int play, int piece, int i, int j) {
         return init_v[piece] + 1;
       }
     case 2:
-      if ((play ? (pii(i, j) == pii(0, 4)) : (pii(j, i) == pii(0, 5))))
+      if ((play ? (Point(i, j) == Point(0, 4)) : (Point(j, i) == Point(0, 5))))
         return init_v[piece];
       else {
         return init_v[piece] + 1;
       }
     case 3:
-      if ((play ? (pii(i, j) == pii(0, 3)) : (pii(j, i) == pii(1, 5))))
+      if ((play ? (Point(i, j) == Point(0, 3)) : (Point(j, i) == Point(1, 5))))
         return init_v[piece];
       else {
         return init_v[piece] + 1;
       }
     case 4:
-      if ((play ? (pii(i, j) == pii(0, 2)) : (pii(j, i) == pii(2, 5))))
+      if ((play ? (Point(i, j) == Point(0, 2)) : (Point(j, i) == Point(2, 5))))
         return init_v[piece];
       else {
         return init_v[piece] + 1;
       }
     case 5:
-      if ((play ? (pii(i, j) == pii(0, 1)) : (pii(j, i) == pii(3, 5))))
+      if ((play ? (Point(i, j) == Point(0, 1)) : (Point(j, i) == Point(3, 5))))
         return init_v[piece];
       else {
         return init_v[piece] + 1;
       }
     case 6:
-      if ((play ? (pii(i, j) == pii(0, 0)) : (pii(j, i) == pii(4, 5))))
+      if ((play ? (Point(i, j) == Point(0, 0)) : (Point(j, i) == Point(4, 5))))
         return init_v[piece];
       else {
         return init_v[piece] + 1;
       }
     default: return 0;
-  }
+  }*/
 }
 
 //space and attack pts
 int State::cnt(int play, int piece, int i, int j) {
   if (!piece) return 0;
-  int rtv = piece_value(play, piece, i, j);
+  //int rtv = 0;
+  int rtv = piece_v[piece][i][j][play] * init_v[piece];
   auto self_board = board.board[play];
   auto oppn_board = board.board[1 - play];
   switch (piece) {
@@ -157,6 +204,7 @@ int State::cnt(int play, int piece, int i, int j) {
       }
     break;
     case 6: //king
+      is_safe = true;
       for(auto move: move_table_king){
         int x = move[0] + i;
         int y = move[1] + j;
@@ -186,9 +234,8 @@ int State::evaluate(){
       }
     }
   }
-  return rtv;
+  return is_safe ? rtv : -__INT_MAX__;
 }
-
 
 /**
  * @brief return next state after the move
