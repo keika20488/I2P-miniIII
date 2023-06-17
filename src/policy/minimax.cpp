@@ -12,13 +12,34 @@
  * @return Move 
  */
 Move Minimax::get_move(State *state, int depth){
-  if(!state->legal_actions.size())
+  if (!state->legal_actions.size())
     state->get_legal_actions();
   
-  int k = depth;
-  auto actions = state->legal_actions;
-  for (int i=0; i<depth; i++){
-    k = rand()/k;
+  Move best;
+  int MAX = -__INT_MAX__, score;
+  for (auto move: state->legal_actions) {
+    score = minimax(state->next_state(move), depth, true);
+    if (score > MAX) {
+      MAX = score;
+      best = move;
+    }
   }
-  return actions[k%actions.size()];
+  return best;
+}
+
+int Minimax::minimax(State *state, int depth, bool maximize) {
+  if (!depth) return state->evaluate();
+  if (!state->legal_actions.size())
+    state->get_legal_actions();
+  int value;
+  if (maximize) {
+    value = -__INT_MAX__;
+    for (auto move: state->legal_actions)
+      value = std::max(value, minimax(state->next_state(move), depth-1, false));
+  } else {
+    value = __INT_MAX__;
+    for (auto move: state->legal_actions)
+      value = std::min(value, minimax(state->next_state(move), depth-1, true));
+  }
+  return value;
 }
