@@ -5,15 +5,114 @@
 #include "./state.hpp"
 #include "../config.hpp"
 
+typedef std::pair<int, int> pii;
 
 /**
  * @brief evaluate the state
  * 
  * @return int 
  */
+
+// [TODO] design your own evaluation function
+//piece_value: initial, with pos
+const int init_v[] = {0, 2, 6, 7, 8, 20, 100};
+//space: ?? pts for each square in control
+//attack: if can attack P then get P's init_pts
+
+//piece value
+int State::piece_value(int play, int piece, int i, int j) {
+  switch (piece) {
+    case 1:
+      if (i = play ? 1 : BOARD_H - 2)
+        return init_v[piece];
+      else {}
+    case 2:
+      if (play ? (pii(i, j) == pii(0, 4)) : (pii(j, i) == pii(0, 5)))
+        return init_v[piece];
+      else {}
+    case 3:
+      if (play ? (pii(i, j) == pii(0, 3)) : (pii(j, i) == pii(1, 5)))
+        return init_v[piece];
+      else {}
+    case 4:
+      if (play ? (pii(i, j) == pii(0, 2)) : (pii(j, i) == pii(2, 5)))
+        return init_v[piece];
+      else {}
+    case 5:
+      if (play ? (pii(i, j) == pii(0, 1)) : (pii(j, i) == pii(3, 5)))
+        return init_v[piece];
+      else {}
+    case 6:
+      if (play ? (pii(i, j) == pii(0, 0)) : (pii(j, i) == pii(4, 5)))
+        return init_v[piece];
+      else {}
+  }
+}
+
+//advance piece, space and attack pts
+int State::cnt(int play, int piece, int i, int j) {
+  if (!piece) return 0;
+  int rtv = 0;
+  auto self_board = board.board[play];
+  auto oppn_board = board.board[1 - play];
+  switch (piece) {
+    case 1:
+      if (play && i < BOARD_H - 1) {
+        if (j) {
+          if (oppn_board[i+1][j-1])
+            rtv += piece_value(1-play, oppn_board[i+1][j-1], i+1, j-1);
+          else if (!self_board[i+1][j-1])
+            rtv += 1;
+        }
+        if (j < BOARD_W - 1) {
+          if (oppn_board[i+1][j+1])
+            rtv += piece_value(1-play, oppn_board[i+1][j+1], i+1, j+1);
+          else if (!self_board[i+1][j+1])
+            rtv += 1;
+        }
+      } else if (!play && i) {
+        if (j) {
+          if (oppn_board[i-1][j-1])
+            rtv += piece_value(1-play, oppn_board[i-1][j-1], i-1, j-1);
+          else if (!self_board[i-1][j-1])
+            rtv += 1;
+        }
+        if (j < BOARD_W - 1) {
+          if (oppn_board[i-1][j+1])
+            rtv += piece_value(1-play, oppn_board[i-1][j+1], i-1, j+1);
+          else if (!self_board[i-1][j+1])
+            rtv += 1;
+        }
+      }
+    break;
+    case 2:
+    break;
+    case 3:
+    break;
+    case 4:
+    break;
+    case 5:
+    break;
+    case 6:
+    break;
+  }
+}
+
 int State::evaluate(){
-  // [TODO] design your own evaluation function
-  return 0;
+  int piece;
+  auto self_board = board.board[player];
+  auto oppn_board = board.board[1 - player];
+  int rtv = legal_actions.size();
+  for (int i = 0; i < BOARD_H; i++){
+    for (int j = 0; j < BOARD_W; j++){
+      if (piece = self_board[i][j]) {
+        rtv += cnt(player, piece, i, j); 
+      } else if (piece = oppn_board[i][j]) {
+        rtv -= cnt(1 - player, piece, i, j); 
+      }
+    }
+  }
+  return rtv;
 }
 
 
