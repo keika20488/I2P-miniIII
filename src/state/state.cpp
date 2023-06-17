@@ -7,6 +7,28 @@
 
 typedef std::pair<int, int> pii;
 
+static const int move_table_rook_bishop[8][7][2] = {
+  {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}, {0, 7}},
+  {{0, -1}, {0, -2}, {0, -3}, {0, -4}, {0, -5}, {0, -6}, {0, -7}},
+  {{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}},
+  {{-1, 0}, {-2, 0}, {-3, 0}, {-4, 0}, {-5, 0}, {-6, 0}, {-7, 0}},
+  {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}, {7, 7}},
+  {{1, -1}, {2, -2}, {3, -3}, {4, -4}, {5, -5}, {6, -6}, {7, -7}},
+  {{-1, 1}, {-2, 2}, {-3, 3}, {-4, 4}, {-5, 5}, {-6, 6}, {-7, 7}},
+  {{-1, -1}, {-2, -2}, {-3, -3}, {-4, -4}, {-5, -5}, {-6, -6}, {-7, -7}},
+};
+static const int move_table_knight[8][2] = {
+  {1, 2}, {1, -2},
+  {-1, 2}, {-1, -2},
+  {2, 1}, {2, -1},
+  {-2, 1}, {-2, -1},
+};
+static const int move_table_king[8][2] = {
+  {1, 0}, {0, 1}, {-1, 0}, {0, -1}, 
+  {1, 1}, {1, -1}, {-1, 1}, {-1, -1},
+};
+
+
 /**
  * @brief evaluate the state
  * 
@@ -23,40 +45,53 @@ const int init_v[] = {0, 2, 6, 7, 8, 20, 100};
 int State::piece_value(int play, int piece, int i, int j) {
   switch (piece) {
     case 1:
-      if (i = play ? 1 : BOARD_H - 2)
+      if ((i = (play ? 1 : BOARD_H - 2)))
         return init_v[piece];
-      else {}
+      else {
+        return init_v[piece] + 1;
+      }
     case 2:
-      if (play ? (pii(i, j) == pii(0, 4)) : (pii(j, i) == pii(0, 5)))
+      if ((play ? (pii(i, j) == pii(0, 4)) : (pii(j, i) == pii(0, 5))))
         return init_v[piece];
-      else {}
+      else {
+        return init_v[piece] + 1;
+      }
     case 3:
-      if (play ? (pii(i, j) == pii(0, 3)) : (pii(j, i) == pii(1, 5)))
+      if ((play ? (pii(i, j) == pii(0, 3)) : (pii(j, i) == pii(1, 5))))
         return init_v[piece];
-      else {}
+      else {
+        return init_v[piece] + 1;
+      }
     case 4:
-      if (play ? (pii(i, j) == pii(0, 2)) : (pii(j, i) == pii(2, 5)))
+      if ((play ? (pii(i, j) == pii(0, 2)) : (pii(j, i) == pii(2, 5))))
         return init_v[piece];
-      else {}
+      else {
+        return init_v[piece] + 1;
+      }
     case 5:
-      if (play ? (pii(i, j) == pii(0, 1)) : (pii(j, i) == pii(3, 5)))
+      if ((play ? (pii(i, j) == pii(0, 1)) : (pii(j, i) == pii(3, 5))))
         return init_v[piece];
-      else {}
+      else {
+        return init_v[piece] + 1;
+      }
     case 6:
-      if (play ? (pii(i, j) == pii(0, 0)) : (pii(j, i) == pii(4, 5)))
+      if ((play ? (pii(i, j) == pii(0, 0)) : (pii(j, i) == pii(4, 5))))
         return init_v[piece];
-      else {}
+      else {
+        return init_v[piece] + 1;
+      }
+    default: return 0;
   }
 }
 
-//advance piece, space and attack pts
+//space and attack pts
 int State::cnt(int play, int piece, int i, int j) {
   if (!piece) return 0;
-  int rtv = 0;
+  int rtv = piece_value(play, piece, i, j);
   auto self_board = board.board[play];
   auto oppn_board = board.board[1 - play];
   switch (piece) {
-    case 1:
+    case 1://pawn
       if (play && i < BOARD_H - 1) {
         if (j) {
           if (oppn_board[i+1][j-1])
@@ -85,17 +120,56 @@ int State::cnt(int play, int piece, int i, int j) {
         }
       }
     break;
-    case 2:
+    case 2: //rook
+    case 4: //bishop
+    case 5: //queen
+      int st, end;
+      switch (piece){
+        case 2: st=0; end=4; break; //rook
+        case 4: st=4; end=8; break; //bishop
+        case 5: st=0; end=8; break; //queen
+        default: st=0; end=-1;
+      }
+      for(int part = st; part < end; part++){
+        auto move_list = move_table_rook_bishop[part];
+        for(int k = 0; k < std::max(BOARD_H, BOARD_W); k++){
+          int x = move_list[k][0] + i;
+          int y = move_list[k][1] + j;
+          
+          if(x>=BOARD_H || x<0 || y>=BOARD_W || y<0) break;
+          
+          if(oppn_board[x][y])
+            rtv += piece_value(1-play, oppn_board[x][y], x, y);
+          else if (!self_board[x][y]) rtv += 1;
+        }
+      }
     break;
-    case 3:
+    case 3: //knight
+      for(auto move: move_table_knight){
+        int x = move[0] + i;
+        int y = move[1] + j;
+        
+        if(x>=BOARD_H || x<0 || y>=BOARD_W || y<0) continue;
+
+        if(oppn_board[x][y])
+          rtv += piece_value(1-play, oppn_board[x][y], x, y);
+        else if (!self_board[x][y]) rtv += 1;
+      }
     break;
-    case 4:
-    break;
-    case 5:
-    break;
-    case 6:
+    case 6: //king
+      for(auto move: move_table_king){
+        int x = move[0] + i;
+        int y = move[1] + j;
+        
+        if(x>=BOARD_H || x<0 || y>=BOARD_W || y<0) continue;
+        
+        if(oppn_board[x][y])
+          rtv += piece_value(1-play, oppn_board[x][y], x, y);
+        else if (!self_board[x][y]) rtv += 1;
+      }
     break;
   }
+  return rtv;
 }
 
 int State::evaluate(){
@@ -105,9 +179,9 @@ int State::evaluate(){
   int rtv = legal_actions.size();
   for (int i = 0; i < BOARD_H; i++){
     for (int j = 0; j < BOARD_W; j++){
-      if (piece = self_board[i][j]) {
+      if ((piece = self_board[i][j])) {
         rtv += cnt(player, piece, i, j); 
-      } else if (piece = oppn_board[i][j]) {
+      } else if ((piece = oppn_board[i][j])) {
         rtv -= cnt(1 - player, piece, i, j); 
       }
     }
@@ -144,29 +218,6 @@ State* State::next_state(Move move){
     next_state->get_legal_actions();
   return next_state;
 }
-
-
-static const int move_table_rook_bishop[8][7][2] = {
-  {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}, {0, 7}},
-  {{0, -1}, {0, -2}, {0, -3}, {0, -4}, {0, -5}, {0, -6}, {0, -7}},
-  {{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}},
-  {{-1, 0}, {-2, 0}, {-3, 0}, {-4, 0}, {-5, 0}, {-6, 0}, {-7, 0}},
-  {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}, {7, 7}},
-  {{1, -1}, {2, -2}, {3, -3}, {4, -4}, {5, -5}, {6, -6}, {7, -7}},
-  {{-1, 1}, {-2, 2}, {-3, 3}, {-4, 4}, {-5, 5}, {-6, 6}, {-7, 7}},
-  {{-1, -1}, {-2, -2}, {-3, -3}, {-4, -4}, {-5, -5}, {-6, -6}, {-7, -7}},
-};
-static const int move_table_knight[8][2] = {
-  {1, 2}, {1, -2},
-  {-1, 2}, {-1, -2},
-  {2, 1}, {2, -1},
-  {-2, 1}, {-2, -1},
-};
-static const int move_table_king[8][2] = {
-  {1, 0}, {0, 1}, {-1, 0}, {0, -1}, 
-  {1, 1}, {1, -1}, {-1, 1}, {-1, -1},
-};
-
 
 /**
  * @brief get all legal actions of now state
