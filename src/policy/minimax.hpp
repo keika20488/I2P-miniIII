@@ -6,6 +6,7 @@
  * @brief Policy class for random policy, 
  * your policy class should have get_move method
  */
+const int MAX_DEPTH = 10;
 class Minimax{
 public:
   static Move get_move(State *state, int depth);
