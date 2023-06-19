@@ -15,7 +15,7 @@ Move Minimax::get_move(State *state, int depth){
   if (!state->legal_actions.size())
     state->get_legal_actions();
 
-  Move best;
+  Move best = state->legal_actions[0];
   int score, MAX = -__INT_MAX__;
   for (auto move: state->legal_actions) {
     score = minimax(state->next_state(move), depth, false);

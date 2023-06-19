@@ -15,7 +15,7 @@ Move AlphaBeta::get_move(State *state, int depth){
   if(!state->legal_actions.size())
     state->get_legal_actions();
   
-  Move best;
+  Move best = state->legal_actions[0];
   int MAX = -__INT_MAX__, score;
   for (auto move: state->legal_actions) {
     score = alphabeta(state->next_state(move), depth-1, -__INT_MAX__, __INT_MAX__, false);
