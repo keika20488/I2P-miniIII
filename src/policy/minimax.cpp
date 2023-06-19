@@ -18,7 +18,7 @@ Move Minimax::get_move(State *state, int depth){
   Move best;
   int score, MAX = -__INT_MAX__;
   for (auto move: state->legal_actions) {
-    score = minimax(state->next_state(move), depth-1, false);
+    score = minimax(state->next_state(move), depth, false);
     if (score > MAX) {
       MAX = score;
       best = move;
@@ -31,12 +31,12 @@ int Minimax::minimax(State *state, int depth, bool maximize) {
   if (!state->legal_actions.size())
     state->get_legal_actions();
 
-  if (state->legal_actions.empty()) {
-    if (state->game_state == WIN)
-      return maximize ? __INT_MAX__ : -__INT_MAX__;
-    else return maximize ? -__INT_MAX__ : __INT_MAX__;
-  }
+  if (state->game_state == WIN)
+        return maximize ? __INT_MAX__ : -__INT_MAX__;
 
+  if (state->legal_actions.empty())
+    return maximize ? -__INT_MAX__ : __INT_MAX__;
+    
   if (!depth) return state->evaluate();
 
   int value;

@@ -40,8 +40,9 @@ void read_board(std::ifstream& fin) {
  */
 void write_valid_spot(std::ofstream& fout) {
   // Keep updating the output until getting killed.
-  while(true) {
-    auto move = Minimax::get_move(root, MAX_DEPTH);
+  int depth = 1;
+  while (depth <= MAX_DEPTH) {
+    auto move = Minimax::get_move(root, depth++);
     fout << move.first.first << " " << move.first.second << " "\
          << move.second.first << " " << move.second.second << std::endl;
     
@@ -59,7 +60,7 @@ void write_valid_spot(std::ofstream& fout) {
  * @return int 
  */
 int main(int, char** argv) {
-  srand(RANDOM_SEED);
+  //srand(RANDOM_SEED);
   std::ifstream fin(argv[1]);
   std::ofstream fout(argv[2]);
 
