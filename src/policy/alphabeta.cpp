@@ -31,11 +31,8 @@ int AlphaBeta::alphabeta(State *state, int depth, int a, int b, bool maximize) {
   if (!state->legal_actions.size())
     state->get_legal_actions();
 
-  if (state->game_state == WIN)
-        return maximize ? __INT_MAX__ : -__INT_MAX__;
-
-  if (state->legal_actions.empty())
-    return maximize ? -__INT_MAX__ : __INT_MAX__;
+  if (state->game_state == WIN || state->legal_actions.empty())
+    return maximize ? __INT_MAX__ : -__INT_MAX__;
 
   if (!depth) return state->evaluate();
   

@@ -31,11 +31,8 @@ int Minimax::minimax(State *state, int depth, bool maximize) {
   if (!state->legal_actions.size())
     state->get_legal_actions();
 
-  if (state->game_state == WIN)
-        return maximize ? __INT_MAX__ : -__INT_MAX__;
-
-  if (state->legal_actions.empty())
-    return maximize ? -__INT_MAX__ : __INT_MAX__;
+  if (state->game_state == WIN || state->legal_actions.empty())
+    return maximize ? __INT_MAX__ : -__INT_MAX__;
     
   if (!depth) return state->evaluate();
 
