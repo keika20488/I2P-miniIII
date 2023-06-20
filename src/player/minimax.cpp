@@ -40,7 +40,7 @@ void read_board(std::ifstream& fin) {
  */
 void write_valid_spot(std::ofstream& fout) {
   // Keep updating the output until getting killed.
-  int depth = 1;
+  int depth = 0;
   while (true) {
     auto move = Minimax::get_move(root, depth++);
     fout << move.first.first << " " << move.first.second << " "\
@@ -48,7 +48,6 @@ void write_valid_spot(std::ofstream& fout) {
     
     // Remember to flush the output to ensure the last action is written to file.
     fout.flush();
-    //break;
   }
 }
 
