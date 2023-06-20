@@ -148,7 +148,7 @@ int State::cnt(int play, int piece, int i, int j) {
 int State::evaluate(){
   auto self_board = board.board[player];
   auto oppn_board = board.board[1 - player];
-  int rtv = legal_actions.size();
+  int rtv = 0;
   for (int i = 0; i < BOARD_H; i++)
     for (int j = 0; j < BOARD_W; j++)
       rtv += cnt(1 - player, oppn_board[i][j], i, j)\
