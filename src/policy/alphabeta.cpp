@@ -5,7 +5,7 @@
 
 
 /**
- * @brief Randomly get a legal action
+ * @brief get a legal action by alpha beta
  * 
  * @param state Now state
  * @param depth You may need this for other policy
@@ -31,7 +31,7 @@ int AlphaBeta::alphabeta(State *state, int depth, int a, int b, bool maximize) {
   if (!state->legal_actions.size())
     state->get_legal_actions();
 
-  if (state->game_state == WIN || state->legal_actions.empty())
+  if (state->game_state == WIN)
     return maximize ? __INT_MAX__ : -__INT_MAX__;
 
   if (!depth) return state->evaluate();
@@ -46,7 +46,7 @@ int AlphaBeta::alphabeta(State *state, int depth, int a, int b, bool maximize) {
       value = std::max(value, alphabeta(next, depth-1, a, b, false));
       a = std::max(a, value);
       if (a >= b) break;
-    }// returb 
+    }
   } else {
     value = __INT_MAX__;
     for (auto move: actions) {

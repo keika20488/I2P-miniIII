@@ -54,16 +54,12 @@ int State::cnt(int play, int piece, int i, int j) {
             rtv += material[p]*(p - piece);
           else if ((p = self_board[i+1][j-1]))
             rtv += 0.5*(p - piece)*material[p];
-          else
-            rtv += 1;
         }
         if (j < BOARD_W - 1) {
           if ((p = oppn_board[i+1][j+1]))
             rtv += material[p]*(p - piece);
           else if ((p = self_board[i+1][j+1]))
             rtv += 0.5*(p - piece)*material[p];
-          else
-            rtv += 1;
         }
       } else if (!play && i) {
         if (j) {
@@ -71,16 +67,12 @@ int State::cnt(int play, int piece, int i, int j) {
             rtv += material[p]*(p - piece);
           else if ((p = self_board[i-1][j-1]))
             rtv += 0.5*(p - piece)*material[p];
-          else
-            rtv += 1;
         }
         if (j < BOARD_W - 1) {
           if ((p = oppn_board[i-1][j+1]))
             rtv += material[p]*(p - piece);
           else if ((p = self_board[i-1][j+1]))
             rtv += 0.5*(p - piece)*material[p];
-          else
-            rtv += 1;
         }
       }
     break;
@@ -106,8 +98,6 @@ int State::cnt(int play, int piece, int i, int j) {
             rtv += material[p];
           else if ((p = self_board[x][y]))
             rtv += 0.5*material[p];
-          else
-            rtv += 1;
         }
       }
     break;
@@ -122,8 +112,6 @@ int State::cnt(int play, int piece, int i, int j) {
           rtv += material[p] ;
         else if ((p = self_board[x][y]))
           rtv += 0.5*material[p];
-        else
-          rtv += 1;
       }
     break;
     case 6: //king
@@ -137,8 +125,6 @@ int State::cnt(int play, int piece, int i, int j) {
           rtv += material[p];
         else if ((p = self_board[x][y]))
           rtv += 0.5*material[p];
-        else
-          rtv += 1;
       }
     break;
   }
