@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdlib>
 #include <vector>
+#include <map>
 #include <utility>
 
 #include "../config.hpp"
@@ -47,7 +48,6 @@ class State{
     Board board;
     int player = 0;
     std::vector<Move> legal_actions;
-    bool is_safe = false;
     
     State(){};
     State(int player): player(player){};
@@ -56,7 +56,6 @@ class State{
     
     int evaluate();
     int cnt(int play, int piece, int i, int j);
-    int piece_value(int play, int piece, int i, int j);
     State* next_state(Move move);
     void get_legal_actions();
     std::string encode_output();

@@ -33,136 +33,53 @@ static const int move_table_king[8][2] = {
  * @return int 
  */
 
-// [TODO] design your own evaluation function
-//piece_value: initial, special pos
-const int init_v[] = {0, 2, 6, 7, 8, 20, 1000};
-//psqt
-const int piece_v[][BOARD_H][BOARD_W][2] = {
-  {},
-  //pawn
-  {{{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
-   {{ 2, 0},{ 3, 0},{ 7, 1},{ 3, 0},{ 2, 0}},
-   {{ 1, 1},{ 1, 0},{ 3, 1},{ 1, 0},{ 1, 0}},
-   {{ 0, 1},{ 0, 1},{ 1, 3},{ 0, 1},{ 0, 1}},
-   {{ 0, 1},{ 0, 3},{ 1, 7},{ 0, 3},{ 0, 1}},
-   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}}},
-  //rook
-  {{{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
-   {{ 1, 0},{ 2, 0},{ 3, 0},{ 2, 0},{ 1, 0}},
-   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
-   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
-   {{ 0, 1},{ 0, 2},{ 0, 3},{ 0, 2},{ 0, 1}},
-   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}}},
-  //knight
-  {{{-2,-2},{-1,-1},{-1,-1},{-1,-1},{-2,-2}},
-   {{-1,-1},{ 0, 0},{ 0, 0},{ 0, 0},{-1,-1}},
-   {{ 0, 0},{ 2, 2},{ 2, 2},{ 2, 2},{ 0, 0}},
-   {{ 0, 0},{ 2, 2},{ 2, 2},{ 2, 2},{ 0, 0}},
-   {{-1,-1},{ 0, 0},{ 0, 0},{ 0, 0},{-1,-1}},
-   {{-2,-2},{-1,-1},{-1,-1},{-1,-1},{-2,-2}}},
-  //bishop
-  {{{-2,-2},{ 0,-1},{ 0, 0},{ 0,-1},{-2,-2}},
-   {{-2,-2},{ 1, 0},{ 1, 0},{ 1, 0},{-2,-2}},
-   {{-1,-1},{ 2, 2},{ 2, 2},{ 2, 2},{-1,-1}},
-   {{ 0, 0},{ 2, 2},{ 2, 2},{ 2, 2},{ 0, 0}},
-   {{-1,-1},{ 0, 1},{ 0, 1},{ 0, 1},{-1,-1}},
-   {{-2,-2},{-1, 0},{ 0, 0},{-1, 0},{-2,-2}}},
-  //queen
-  {{{-2,-2},{ 0,-1},{ 0, 0},{ 0,-1},{-2,-2}},
-   {{-2,-2},{ 1, 0},{ 1, 0},{ 1, 0},{-2,-2}},
-   {{-1,-1},{ 2, 2},{ 2, 2},{ 2, 2},{-1,-1}},
-   {{ 0, 0},{ 2, 2},{ 2, 2},{ 2, 2},{ 0, 0}},
-   {{-1,-1},{ 0, 1},{ 0, 1},{ 0, 1},{-1,-1}},
-   {{-2,-2},{-1, 0},{ 0, 0},{-1, 0},{-2,-2}}},
-  //king
-  {{{ 0, 0},{ 0, 1},{ 0,-1},{ 0, 1},{ 0, 0}},
-   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
-   {{ 0, 0},{ 0, 0},{ 2, 2},{ 0, 0},{ 0, 0}},
-   {{ 0, 0},{ 0, 0},{ 2, 2},{ 0, 0},{ 0, 0}},
-   {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}},
-   {{ 0, 0},{ 1, 0},{-1, 0},{ 1, 0},{ 0, 0}}}
-};
+//piece_value
+const int material[] = {0, 2, 6, 7, 8, 20, 200};
 
+//attack/protect/space pts
+//attack: if can attack P then get P's value
+//protect: get half value if you protect it
 //space: 1 pts for each square in control
-//attack: if can attack P then get P's init_pts
-
-//piece value
-int State::piece_value(int play, int piece, int i, int j) {
-  return piece_v[piece][i][j][play] * init_v[piece];
-  /*switch (piece) {
-    case 1:
-      if ((i = (play ? 1 : BOARD_H - 2)))
-        return init_v[piece];
-      else {
-        return init_v[piece] + 1;
-      }
-    case 2:
-      if ((play ? (Point(i, j) == Point(0, 4)) : (Point(j, i) == Point(0, 5))))
-        return init_v[piece];
-      else {
-        return init_v[piece] + 1;
-      }
-    case 3:
-      if ((play ? (Point(i, j) == Point(0, 3)) : (Point(j, i) == Point(1, 5))))
-        return init_v[piece];
-      else {
-        return init_v[piece] + 1;
-      }
-    case 4:
-      if ((play ? (Point(i, j) == Point(0, 2)) : (Point(j, i) == Point(2, 5))))
-        return init_v[piece];
-      else {
-        return init_v[piece] + 1;
-      }
-    case 5:
-      if ((play ? (Point(i, j) == Point(0, 1)) : (Point(j, i) == Point(3, 5))))
-        return init_v[piece];
-      else {
-        return init_v[piece] + 1;
-      }
-    case 6:
-      if ((play ? (Point(i, j) == Point(0, 0)) : (Point(j, i) == Point(4, 5))))
-        return init_v[piece];
-      else {
-        return init_v[piece] + 1;
-      }
-    default: return 0;
-  }*/
-}
-
-//space and attack pts
 int State::cnt(int play, int piece, int i, int j) {
   if (!piece) return 0;
-  //int rtv = 0;
-  int rtv = piece_v[piece][i][j][play] * init_v[piece];
+
+  int p, rtv = material[piece];
   auto self_board = board.board[play];
   auto oppn_board = board.board[1 - play];
   switch (piece) {
     case 1://pawn
       if (play && i < BOARD_H - 1) {
         if (j) {
-          if (oppn_board[i+1][j-1])
-            rtv += piece_value(1-play, oppn_board[i+1][j-1], i+1, j-1);
-          else if (!self_board[i+1][j-1])
+          if ((p = oppn_board[i+1][j-1]))
+            rtv += material[p]*(p - piece);
+          else if ((p = self_board[i+1][j-1]))
+            rtv += 0.5*(p - piece)*material[p];
+          else
             rtv += 1;
         }
         if (j < BOARD_W - 1) {
-          if (oppn_board[i+1][j+1])
-            rtv += piece_value(1-play, oppn_board[i+1][j+1], i+1, j+1);
-          else if (!self_board[i+1][j+1])
+          if ((p = oppn_board[i+1][j+1]))
+            rtv += material[p]*(p - piece);
+          else if ((p = self_board[i+1][j+1]))
+            rtv += 0.5*(p - piece)*material[p];
+          else
             rtv += 1;
         }
       } else if (!play && i) {
         if (j) {
-          if (oppn_board[i-1][j-1])
-            rtv += piece_value(1-play, oppn_board[i-1][j-1], i-1, j-1);
-          else if (!self_board[i-1][j-1])
+          if ((p = oppn_board[i-1][j-1]))
+            rtv += material[p]*(p - piece);
+          else if ((p = self_board[i-1][j-1]))
+            rtv += 0.5*(p - piece)*material[p];
+          else
             rtv += 1;
         }
         if (j < BOARD_W - 1) {
-          if (oppn_board[i-1][j+1])
-            rtv += piece_value(1-play, oppn_board[i-1][j+1], i-1, j+1);
-          else if (!self_board[i-1][j+1])
+          if ((p = oppn_board[i-1][j+1]))
+            rtv += material[p]*(p - piece);
+          else if ((p = self_board[i-1][j+1]))
+            rtv += 0.5*(p - piece)*material[p];
+          else
             rtv += 1;
         }
       }
@@ -185,9 +102,12 @@ int State::cnt(int play, int piece, int i, int j) {
           
           if(x>=BOARD_H || x<0 || y>=BOARD_W || y<0) break;
           
-          if(oppn_board[x][y])
-            rtv += piece_value(1-play, oppn_board[x][y], x, y);
-          else if (!self_board[x][y]) rtv += 1;
+          if ((p = oppn_board[x][y]))
+            rtv += material[p];
+          else if ((p = self_board[x][y]))
+            rtv += 0.5*material[p];
+          else
+            rtv += 1;
         }
       }
     break;
@@ -198,22 +118,27 @@ int State::cnt(int play, int piece, int i, int j) {
         
         if(x>=BOARD_H || x<0 || y>=BOARD_W || y<0) continue;
 
-        if(oppn_board[x][y])
-          rtv += piece_value(1-play, oppn_board[x][y], x, y);
-        else if (!self_board[x][y]) rtv += 1;
+        if ((p = oppn_board[x][y]))
+          rtv += material[p] ;
+        else if ((p = self_board[x][y]))
+          rtv += 0.5*material[p];
+        else
+          rtv += 1;
       }
     break;
     case 6: //king
-      is_safe = true;
       for(auto move: move_table_king){
         int x = move[0] + i;
         int y = move[1] + j;
         
         if(x>=BOARD_H || x<0 || y>=BOARD_W || y<0) continue;
         
-        if(oppn_board[x][y])
-          rtv += piece_value(1-play, oppn_board[x][y], x, y);
-        else if (!self_board[x][y]) rtv += 1;
+        if ((p = oppn_board[x][y]))
+          rtv += material[p];
+        else if ((p = self_board[x][y]))
+          rtv += 0.5*material[p];
+        else
+          rtv += 1;
       }
     break;
   }
@@ -221,20 +146,14 @@ int State::cnt(int play, int piece, int i, int j) {
 }
 
 int State::evaluate(){
-  int piece;
   auto self_board = board.board[player];
   auto oppn_board = board.board[1 - player];
   int rtv = legal_actions.size();
-  for (int i = 0; i < BOARD_H; i++){
-    for (int j = 0; j < BOARD_W; j++){
-      if ((piece = self_board[i][j])) {
-        rtv += cnt(player, piece, i, j); 
-      } else if ((piece = oppn_board[i][j])) {
-        rtv -= cnt(1 - player, piece, i, j); 
-      }
-    }
-  }
-  return is_safe ? rtv : -__INT_MAX__;
+  for (int i = 0; i < BOARD_H; i++)
+    for (int j = 0; j < BOARD_W; j++)
+      rtv += cnt(1 - player, oppn_board[i][j], i, j)\
+            - cnt(player, self_board[i][j], i, j);
+  return rtv;
 }
 
 /**
